@@ -1,0 +1,72 @@
+name: Monthly regression
+
+on:
+  schedule:
+    - cron: '0 9 1 * *'
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'Target URL (leave blank for production)'
+        required: false
+        default: 'https://agronexustrading.in'
+
+jobs:
+  regression:
+    name: Run regression suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium webkit firefox
+
+      - name: Run smoke tests first
+        run: npx playwright test --grep @smoke
+        env:
+          BASE_URL: ${{ github.event.inputs.base_url || 'https://agronexustrading.in' }}
+
+      - name: Run full regression suite
+        run: npx playwright test
+        env:
+          BASE_URL: ${{ github.event.inputs.base_url || 'https://agronexustrading.in' }}
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: regression-report-${{ github.run_number }}
+          path: playwright-report/
+          retention-days: 30
+
+      - name: Upload JSON results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: regression-results-${{ github.run_number }}
+          path: results/
+          retention-days: 90
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "REGRESSION FAILED on $(date)"
+          echo "Site: ${{ github.event.inputs.base_url || 'https://agronexustrading.in' }}"
+          echo "Report: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          if [ -n "$SLACK_WEBHOOK_URL" ]; then
+            curl -X POST -H 'Content-type: application/json' \
+              --data "{\"text\":\"\ud83d\udd34 Agronexus regression FAILED\\nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
+              $SLACK_WEBHOOK_URL
+          fi
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
