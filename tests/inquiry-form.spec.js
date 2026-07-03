@@ -16,10 +16,10 @@ test.describe('@form — Inquiry / contact form', () => {
   test('form has all required fields', async ({ page }) => {
     await page.goto('/contact');
     await page.waitForLoadState('networkidle');
-    await expect(page.locator('input[placeholder="e.g. Rahul Patel"]')).toBeVisible();
-    await expect(page.locator('input[placeholder="Company name"]')).toBeVisible();
-    await expect(page.locator('input[placeholder="you@company.com"]')).toBeVisible();
-    await expect(page.locator('select')).toBeVisible();
+    await expect(page.locator('input[placeholder="e.g. Rahul Patel"]').first()).toBeVisible();
+    await expect(page.locator('input[placeholder="Company name"]').first()).toBeVisible();
+    await expect(page.locator('input[placeholder="you@company.com"]').first()).toBeVisible();
+    await expect(page.locator('select').first()).toBeVisible();
     await expect(page.locator('button[type="submit"]').first()).toBeVisible();
   });
 
@@ -34,7 +34,7 @@ test.describe('@form — Inquiry / contact form', () => {
   test('name field accepts text input', async ({ page }) => {
     await page.goto('/contact');
     await page.waitForLoadState('networkidle');
-    const nameInput = page.locator('input[placeholder="e.g. Rahul Patel"]');
+    const nameInput = page.locator('input[placeholder="e.g. Rahul Patel"]').first();
     await nameInput.fill('Test User');
     await expect(nameInput).toHaveValue('Test User');
   });
@@ -42,7 +42,7 @@ test.describe('@form — Inquiry / contact form', () => {
   test('email field accepts valid email', async ({ page }) => {
     await page.goto('/contact');
     await page.waitForLoadState('networkidle');
-    const emailInput = page.locator('input[placeholder="you@company.com"]');
+    const emailInput = page.locator('input[placeholder="you@company.com"]').first();
     await emailInput.fill('test@example.com');
     await expect(emailInput).toHaveValue('test@example.com');
   });
