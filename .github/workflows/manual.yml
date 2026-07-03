@@ -1,0 +1,39 @@
+name: Run regression manually
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'Target URL'
+        required: false
+        default: 'https://agronexustrading.in'
+      test_tag:
+        description: 'Test tag to run (@smoke / @chatbot / @whatsapp / @form / @api / @responsive / leave blank for all)'
+        required: false
+        default: ''
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - run: npx playwright install chromium webkit firefox
+      - name: Run selected tests
+        run: |
+          if [ -n "${{ github.event.inputs.test_tag }}" ]; then
+            npx playwright test --grep "${{ github.event.inputs.test_tag }}"
+          else
+            npx playwright test
+          fi
+        env:
+          BASE_URL: ${{ github.event.inputs.base_url || 'https://agronexustrading.in' }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: report-${{ github.run_number }}
+          path: playwright-report/
+          retention-days: 30
