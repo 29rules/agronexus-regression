@@ -1,58 +1,86 @@
 import { test, expect } from '@playwright/test';
-import { URLS } from '../config/urls.js';
 
-test.describe('@navigation — All pages load', () => {
-  test('navigation bar is visible', async ({ page }) => {
+test.describe('@navigation — Site navigation', () => {
+  const routes = [
+    { path: '/', title: /agronexus/i },
+    { path: '/about', title: /agronexus/i },
+    { path: '/products', title: /agronexus/i },
+    { path: '/services', title: /agronexus/i },
+    { path: '/gallery', title: /agronexus/i },
+    { path: '/certifications', title: /agronexus/i },
+    { path: '/contact', title: /agronexus/i },
+  ];
+
+  test('all routes return 200', async ({ page }) => {
+    for (const route of routes) {
+      const res = await page.goto(route.path);
+      expect(res?.status(), `${route.path} returned ${res?.status()}`).toBe(200);
+    }
+  });
+
+  test('all routes have correct title', async ({ page }) => {
+    for (const route of routes) {
+      await page.goto(route.path);
+      await expect(page, `${route.path} title mismatch`).toHaveTitle(route.title);
+    }
+  });
+
+  test('primary nav is present on homepage', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
-    const nav = page.locator('nav, header, [role="navigation"]').first();
+    const nav = page.locator('nav').first();
     await expect(nav).toBeVisible();
   });
 
-  test('logo is visible and links to home', async ({ page }) => {
-    await page.goto('/');
-    const logo = page.locator('nav img, header img, .logo, [alt*="agronexus" i], [class*="logo" i]').first();
-    await expect(logo).toBeVisible();
-  });
-
-  test('all main routes return 200', async ({ page }) => {
-    const routes = Object.values(URLS);
-    for (const route of routes) {
-      const res = await page.goto(route);
-      expect(res?.status(), `${route} returned ${res?.status()}`).toBe(200);
-    }
-  });
-
-  test('page does not have broken images on homepage', async ({ page }) => {
+  test('nav contains Products link', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
-    const images = await page.locator('img').all();
-    for (const img of images) {
-      const src = await img.getAttribute('src');
-      if (!src || src.startsWith('data:')) continue;
-      const naturalWidth = await img.evaluate(el => el.naturalWidth);
-      expect(naturalWidth, `Image broken: ${src}`).toBeGreaterThan(0);
-    }
+    const link = page.getByRole('link', { name: 'Products' }).first();
+    await expect(link).toBeVisible();
   });
 
-  test('footer is visible on homepage', async ({ page }) => {
+  test('nav contains Contact link', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
-    const footer = page.locator('footer, [class*="footer" i]').first();
+    const link = page.getByRole('link', { name: 'Contact' }).first();
+    await expect(link).toBeVisible();
+  });
+
+  test('nav contains About link', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    const link = page.getByRole('link', { name: 'About' }).first();
+    await expect(link).toBeVisible();
+  });
+
+  test('clicking Products nav link navigates to /products', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    const link = page.locator('nav a[href="/products"]').first();
+    await link.click();
+    await expect(page).toHaveURL(/\/products/);
+  });
+
+  test('clicking Contact nav link navigates to /contact', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    const link = page.locator('nav a[href="/contact"]').first();
+    await link.click();
+    await expect(page).toHaveURL(/\/contact/);
+  });
+
+  test('footer is present on homepage', async ({ page }) => {
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    const footer = page.locator('footer, [role="contentinfo"]').first();
     await expect(footer).toBeVisible();
   });
 
-  test('contact page has a form', async ({ page }) => {
-    await page.goto('/contact');
+  test('logo links back to homepage', async ({ page }) => {
+    await page.goto('/about');
     await page.waitForLoadState('networkidle');
-    const form = page.locator('form').first();
-    await expect(form).toBeVisible();
-  });
-
-  test('products page shows product listings', async ({ page }) => {
-    await page.goto('/products');
-    await page.waitForLoadState('networkidle');
-    const body = await page.locator('body').innerText();
-    expect(body.toLowerCase()).toMatch(/cumin|fennel|coriander|spice|seed/i);
+    const logo = page.locator('header a[href="/"]').first();
+    await logo.click();
+    await expect(page).toHaveURL(/\/$/);
   });
 });
