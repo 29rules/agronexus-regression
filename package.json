@@ -1,0 +1,22 @@
+{
+  "name": "agronexus-regression",
+  "version": "1.0.0",
+  "description": "Monthly regression test suite for agronexustrading.in",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "test:smoke": "playwright test --grep @smoke",
+    "test:whatsapp": "playwright test --grep @whatsapp",
+    "test:chatbot": "playwright test --grep @chatbot",
+    "test:form": "playwright test --grep @form",
+    "test:responsive": "playwright test --grep @responsive",
+    "test:api": "playwright test --grep @api",
+    "test:report": "playwright show-report",
+    "regression": "bash scripts/run-regression.sh"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.44.0",
+    "dotenv": "^16.0.0"
+  }
+}
