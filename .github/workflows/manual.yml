@@ -20,7 +20,7 @@ jobs:
         with:
           node-version: '20'
       - run: npm install
-      - run: npx playwright install chromium webkit firefox
+      - run: npx playwright install --with-deps chromium webkit firefox
       - name: Run selected tests
         run: |
           if [ -n "${{ github.event.inputs.test_tag }}" ]; then
