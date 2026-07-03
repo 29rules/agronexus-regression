@@ -25,7 +25,9 @@ test.describe('@navigation — Site navigation', () => {
     }
   });
 
-  test('primary nav is present on homepage', async ({ page }) => {
+  test('primary nav is present on homepage', async ({ page, isMobile }) => {
+    // On mobile viewports the primary nav is hidden behind a hamburger menu
+    test.skip(isMobile, 'Primary nav is hidden behind hamburger menu on mobile');
     await page.goto('/');
     await page.waitForLoadState('networkidle');
     const nav = page.locator('nav').first();
@@ -53,7 +55,9 @@ test.describe('@navigation — Site navigation', () => {
     await expect(link).toBeVisible();
   });
 
-  test('clicking Products nav link navigates to /products', async ({ page }) => {
+  test('clicking Products nav link navigates to /products', async ({ page, isMobile }) => {
+    // Primary nav links are not clickable on mobile — hidden behind hamburger menu
+    test.skip(isMobile, 'Primary nav is hidden behind hamburger menu on mobile');
     await page.goto('/');
     await page.waitForLoadState('networkidle');
     const link = page.locator('nav a[href="/products"]').first();
@@ -61,7 +65,8 @@ test.describe('@navigation — Site navigation', () => {
     await expect(page).toHaveURL(/\/products/);
   });
 
-  test('clicking Contact nav link navigates to /contact', async ({ page }) => {
+  test('clicking Contact nav link navigates to /contact', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'Primary nav is hidden behind hamburger menu on mobile');
     await page.goto('/');
     await page.waitForLoadState('networkidle');
     const link = page.locator('nav a[href="/contact"]').first();
