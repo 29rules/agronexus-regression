@@ -23,7 +23,7 @@ test.describe('@whatsapp — WhatsApp integration', () => {
     await page.waitForLoadState('networkidle');
     const bubble = page.locator('a[href*="wa.me"]').first();
     const href = await bubble.getAttribute('href');
-    expect(href).toMatch(/wa.me/d{10,15}/);
+    expect(href).toMatch(/wa\.me\/\d{10,15}/);
   });
 
   test('WA bubble link points to Agronexus number', async ({ page }) => {
@@ -38,7 +38,7 @@ test.describe('@whatsapp — WhatsApp integration', () => {
   test('WA bubble opens in new tab', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
-    const bubble = page.locator('a[href*="wa.me"]').first();
+    const bubble = page.locator('a.wab-bubble').first();
     const target = await bubble.getAttribute('target');
     expect(target).toBe('_blank');
   });
@@ -64,6 +64,6 @@ test.describe('@whatsapp — WhatsApp integration', () => {
     await page.goto('/contact');
     await page.waitForLoadState('networkidle');
     const body = await page.locator('body').innerText();
-    expect(body.toLowerCase()).toMatch(/whatsapp|wa.me/i);
+    expect(body.toLowerCase()).toMatch(/whatsapp|wa\.me/i);
   });
 });
